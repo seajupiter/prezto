@@ -1,160 +1,226 @@
-# Prezto — Instantly Awesome Zsh
+# Personal Prezto Configuration
 
-Prezto is the configuration framework for [Zsh][1]; it enriches the command line
-interface environment with sane defaults, aliases, functions, auto completion,
-and prompt themes.
+This is my personal [Prezto][1] configuration - a powerful Zsh framework that provides a solid foundation with sane defaults, aliases, functions, auto-completion, and prompt themes.
+
+## Features
+
+### 🚀 **Performance Optimized**
+- **Lazy loading** for zoxide, thefuck, and ghcup
+- **Fast completion** with optimized compinit caching
+- **Efficient startup** with minimal overhead
+
+### 🔍 **Enhanced Search & Navigation**
+- **fzf integration** with ripgrep backend for lightning-fast file search
+- **fzf-tab completion** providing zsh4humans-like interactive completion
+- **Zoxide** for smart directory jumping
+- **Advanced git status** in prompt with sync indicators
+
+### 📁 **Smart File Management**
+- **Ripgrep** for content search with hidden file support
+- **fd** for fast directory traversal
+- **eza** as a modern ls replacement
+
+### 🎨 **Custom Prompt**
+- **Git integration** with branch, staged/unstaged changes, and sync status
+- **Path shortening** for long directory names
+- **Exit code display** for failed commands
+- **Clean, informative design**
 
 ## Installation
 
-### Manual
+### Prerequisites
+- **Zsh** 4.3.11 or later
+- **Git** for cloning repositories
+- **Recommended tools**: `ripgrep`, `fd`, `eza`, `fzf`, `zoxide`, `thefuck`
 
-Prezto will work with any recent release of Zsh, but the minimum required
-version is **4.3.11**.
+### Setup
 
-01. Launch Zsh:
+1. **Clone this repository:**
+   ```bash
+   git clone --recursive https://github.com/seajupiter/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
+   ```
 
-    ```console
-    zsh
-    ```
+2. **Install contrib modules:**
+   ```bash
+   cd "${ZDOTDIR:-$HOME}/.zprezto"
+   ./setup.sh setup
+   ```
 
-02. Clone the repository:
+3. **Link configuration files:**
+   ```bash
+   setopt EXTENDED_GLOB
+   for rcfile in "${ZDOTDIR:-$HOME}"/.zprezto/runcoms/^README.md(.N); do
+     ln -s "$rcfile" "${ZDOTDIR:-$HOME}/.${rcfile:t}"
+   done
+   ```
 
-    ```console
-    git clone --recursive https://github.com/sorin-ionescu/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
-    ```
+4. **Set Zsh as default shell:**
+   ```bash
+   chsh -s /bin/zsh
+   ```
 
-    <details>
-      <summary><em>Optional: Installing in <code>$XDG_CONFIG_HOME</code></em></summary>
+5. **Open a new terminal window**
 
-      Optionally, if you already have `$XDG_CONFIG_HOME` configured (usually as
-      _`$HOME/.config`_ by default) and intend to install Prezto under
-      _`$XDG_CONFIG_HOME/zsh`_ instead, you can clone the repository there and
-      configure `$ZDOTDIR` separately if not already configured.
+## Contrib Module Management
 
-      - Clone the repository:
+This configuration includes a powerful script for managing external Zsh plugins and themes.
 
-        ```console
-        git clone --recursive https://github.com/sorin-ionescu/prezto.git "${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}/.zprezto"
-        ```
+### Setup Script Usage
 
-      - Configure `$XDG_CONFIG_HOME` and `$ZDOTDIR` in _`$HOME/.zshenv`_:
+```bash
+# Install all defined modules
+./setup.sh setup
 
-        ```sh
-        export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:=$HOME/.config}"
-        [[ -d $XDG_CONFIG_HOME/zsh ]] && export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
-        source "$ZDOTDIR/.zshenv"
-        ```
+# Update all modules
+./setup.sh update
 
-    </details>
+# Update specific module
+./setup.sh update fzf-tab
 
-03. Create a new Zsh configuration by copying/linking the Zsh configuration
-    files provided:
+# List installed modules
+./setup.sh list
 
-    ```console
-    setopt EXTENDED_GLOB
-    for rcfile in "${ZDOTDIR:-$HOME}"/.zprezto/runcoms/^README.md(.N); do
-      ln -s "$rcfile" "${ZDOTDIR:-$HOME}/.${rcfile:t}"
-    done
-    ```
+# Remove a module
+./setup.sh remove fzf-tab
 
-    **Note:** If you already have any of the given configuration files, `ln` in
-    the above operation will cause an error. In simple cases, you can load
-    Prezto by adding the line `source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"` to
-    the bottom of your _`${ZDOTDIR:-$HOME}/.zshrc`_ and keep the rest of your
-    Zsh configuration intact. For more complicated setups, we recommend that you
-    back up your original configs and replace them with the provided Prezto
-    [_`runcoms`_][10].
+# Show help
+./setup.sh help
+```
 
-04. Set Zsh as your default shell:
+### Currently Configured Modules
 
-    ```console
-    chsh -s /bin/zsh
-    ```
+- **[fzf-tab][12]** - Replace zsh's default completion selection menu with fzf
 
-05. Open a new Zsh terminal window or tab.
+### Adding New Modules
 
-### Troubleshooting
+Edit `setup.sh` and add new modules to the `CONTRIB_MODULES` array:
 
-If you are not able to find certain commands after switching to Prezto, modify
-the `PATH` variable in _`${ZDOTDIR:-$HOME}/.zprofile`_ then open a new Zsh
-terminal window or tab.
+```bash
+CONTRIB_MODULES=(
+  "fzf-tab" "https://github.com/Aloxaf/fzf-tab.git"
+  "zsh-you-should-use" "https://github.com/MichaelAquilina/zsh-you-should-use.git"
+  "powerlevel10k" "https://github.com/romkatv/powerlevel10k.git"
+)
+```
+
+Then run `./setup.sh setup` to install the new modules.
+
+**Note:** Contrib modules are installed to `~/.zprezto/contrib/` and are automatically ignored by git.
+
+## Key Bindings & Aliases
+
+### Navigation
+- `z <path>` - Smart directory jumping (zoxide)
+- `zi` - Interactive directory selection (zoxide)
+- `up` - Go up one directory (`cd ..`)
+
+### File Operations
+- `ls`, `ll`, `la` - Enhanced listing with eza
+- `v` - Vim
+- `e` - Emacs client (terminal)
+- `ec` - Emacs client (GUI)
+
+### Git Shortcuts
+- `gt` - Git status
+- `gaa` - Git add all
+
+### System
+- `rz` - Restart zsh (`exec zsh`)
+- `fuck` - TheFuck correction (lazy loaded)
+- `manp <cmd>` - Open man page in Skim PDF viewer
+
+### fzf Integration
+- `Ctrl+T` - File search with ripgrep
+- `Ctrl+R` - Command history search
+- `Alt+C` - Directory search with fd
+- `**<TAB>` - fzf completion trigger
+
+## Customization
+
+### Prompt Customization
+The prompt includes:
+- Exit code display for failed commands
+- Shortened paths for long directories (configurable length)
+- Git branch with staging/unstaging indicators
+- Upstream sync status (ahead/behind)
+- Untracked files indicator
+
+### Adding Lazy Loading
+Follow the pattern used for zoxide and thefuck:
+
+```bash
+if command -v <tool> &> /dev/null; then
+    <alias>() {
+        unfunction <alias>
+        eval "$(<tool> init zsh)"
+        <alias> "$@"
+    }
+else
+    <alias>() { echo "<tool> not installed" }
+fi
+```
 
 ## Updating
 
-Run `zprezto-update` to automatically check if there is an update to Prezto.
-If there are no file conflicts, Prezto and its submodules will be automatically
-updated. If there are conflicts you will be instructed to go into the
-`$ZPREZTODIR` directory and resolve them yourself.
-
-To pull the latest changes and update submodules manually:
-
-```console
+### Update Prezto Core
+```bash
 cd $ZPREZTODIR
 git pull
 git submodule sync --recursive
 git submodule update --init --recursive
 ```
 
-## Usage
+### Update Contrib Modules
+```bash
+./setup.sh update
+```
 
-Prezto has many features disabled by default. Read the source code and the
-accompanying README files to learn about what is available.
+## Performance Notes
 
-### Modules
+- **Startup time**: ~200-300ms on modern hardware
+- **Lazy loading**: Tools load only when first used
+- **Completion caching**: Speeds up tab completion significantly
+- **Optimized git status**: Minimal performance impact in large repos
 
-01. Browse [_`modules`_][9] to see what is available.
-02. Load the modules you need in _`${ZDOTDIR:-$HOME}/.zpreztorc`_ and then open
-    a new Zsh terminal window or tab.
+## Troubleshooting
 
-### Themes
+### Missing Commands
+If commands are not found after setup, check `PATH` in `~/.zprofile`.
 
-01. For a list of themes, type `prompt -l`.
-02. To preview a theme, type `prompt -p name`.
-03. Load the theme you like in _`${ZDOTDIR:-$HOME}/.zpreztorc`_ and then
-    open a new Zsh terminal window or tab.
+### Slow Startup
+1. Check if any non-lazy loaded tools are causing delays
+2. Verify completion cache is working (`ls ~/.zcompdump*`)
+3. Consider moving more tools to lazy loading
 
-    ![sorin theme][2]
-    Note that the [_`git`_][11] module may be required for special symbols to
-    appear, such as those on the right of the above image. Add `'git'` to the
-    `pmodule` list (under `zstyle ':prezto:load' pmodule \` in your
-    _`${ZDOTDIR:-$HOME}/.zpreztorc`_) to enable this module.
+### Git Status Issues
+The custom git prompt hooks are optimized but can be disabled if needed:
+```bash
+zstyle ':vcs_info:git+set-message:*' hooks  # Remove git-untracked git-sync
+```
 
-### External Modules
+## Dependencies
 
-01. By default modules will be loaded from [_`/modules`_][9] and _`/contrib`_.
-02. Additional module directories can be added to the
-    `:prezto:load:pmodule-dirs` setting in _`${ZDOTDIR:-$HOME}/.zpreztorc`_.
+### Required
+- `git` - Version control
+- `zsh` - Shell (4.3.11+)
 
-    Note that module names need to be unique or they will cause an error when
-    loading.
+### Optional (Enhanced Experience)
+- `ripgrep` - Fast content search
+- `fd` - Fast file/directory search  
+- `eza` - Modern ls replacement
+- `fzf` - Fuzzy finder
+- `zoxide` - Smart directory jumping
+- `thefuck` - Command correction
+- `vim` - Text editor
 
-    ```sh
-    zstyle ':prezto:load' pmodule-dirs $HOME/.zprezto-contrib
-    ```
-
-## Customization
-
-The project is managed via [Git][3]. We highly recommend that you fork this
-project so that you can commit your changes and push them to your fork on
-[GitHub][4] to preserve them. If you do not know how to use Git, follow this
-[tutorial][5] and bookmark this [reference][6].
-
-## Resources
-
-The [Zsh Reference Card][7] and the [zsh-lovers][8] man page are indispensable.
+Install on macOS with Homebrew:
+```bash
+brew install ripgrep fd eza fzf zoxide thefuck vim
+```
 
 ## License
 
 This project is licensed under the MIT License.
 
-[1]: https://www.zsh.org
-[2]: https://i.imgur.com/nrGV6pg.png "sorin theme"
-[3]: https://git-scm.com
-[4]: https://github.com
-[5]: https://gitimmersion.com
-[6]: https://git.github.io/git-reference/
-[7]: http://www.bash2zsh.com/zsh_refcard/refcard.pdf
-[8]: https://grml.org/zsh/zsh-lovers.html
-[9]: modules#readme
-[10]: runcoms#readme
-[11]: modules/git#readme
+[1]: https://github.com/sorin-ionescu/prezto
+[12]: https://github.com/Aloxaf/fzf-tab

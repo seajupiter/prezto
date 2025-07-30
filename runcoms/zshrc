@@ -1,3 +1,6 @@
+# Prezto Contrib Modules
+# Run './setup.sh' from ~/.zprezto to install/update contrib modules
+
 # Source Prezto.
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
@@ -122,6 +125,45 @@ else
     # Fallback if thefuck not installed
     fuck() { echo "thefuck not installed" }
 fi
+
+# fzf with ripgrep backend
+export FZF_DEFAULT_COMMAND='rg --files --hidden --follow --glob "!.git/*"'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+
+# fzf completion configuration for zsh4humans-like behavior
+export FZF_COMPLETION_TRIGGER='**'
+export FZF_COMPLETION_OPTS='--border --info=inline --height=50% --reverse'
+
+# Custom fzf completion generators
+_fzf_compgen_path() {
+  rg --files --hidden --follow --glob "!.git/*" "$1" 2>/dev/null
+}
+
+_fzf_compgen_dir() {
+  fd --type d --hidden --follow --exclude .git . "$1" 2>/dev/null
+}
+
+source <(fzf --zsh)
+
+# Load fzf-tab plugin for zsh4humans-like completion with fallback
+if [[ -f ~/.zprezto/contrib/fzf-tab/fzf-tab.plugin.zsh ]]; then
+  source ~/.zprezto/contrib/fzf-tab/fzf-tab.plugin.zsh
+else
+  echo "Warning: fzf-tab plugin not found in contrib directory" >&2
+fi
+
+# Configure fzf-tab
+zstyle ':fzf-tab:complete:*' fzf-bindings 'tab:accept'
+zstyle ':fzf-tab:complete:*' fzf-flags --height=50% --reverse --border
+zstyle ':fzf-tab:complete:*' switch-group ',' '.'
+zstyle ':fzf-tab:complete:*' continuous-trigger '/'
+
+# Enable fzf completion for common commands
+zstyle ':completion:*:git-checkout:*' sort false
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*' menu no
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 
 export EDITOR="/opt/homebrew/bin/vim"
 export TERM="xterm-direct"

@@ -41,7 +41,8 @@ zstyle ':prezto:load' pmodule \
   'prompt' \
   'git' \
   'autosuggestions' \
-  'syntax-highlighting'
+  'syntax-highlighting' \
+  'fzf-tab'
 
 
 #
