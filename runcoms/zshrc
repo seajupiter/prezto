@@ -154,6 +154,7 @@ else
 fi
 
 # Configure fzf-tab
+setopt glob_dots
 zstyle ':fzf-tab:complete:*' fzf-bindings 'return:accept'
 zstyle ':fzf-tab:complete:*' fzf-flags --height=50% --reverse --border
 zstyle ':fzf-tab:complete:*' switch-group ',' '.'
