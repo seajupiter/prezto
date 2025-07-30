@@ -154,7 +154,7 @@ else
 fi
 
 # Configure fzf-tab
-zstyle ':fzf-tab:complete:*' fzf-bindings 'tab:accept'
+zstyle ':fzf-tab:complete:*' fzf-bindings 'return:accept'
 zstyle ':fzf-tab:complete:*' fzf-flags --height=50% --reverse --border
 zstyle ':fzf-tab:complete:*' switch-group ',' '.'
 zstyle ':fzf-tab:complete:*' continuous-trigger '/'
