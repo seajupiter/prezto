@@ -1,13 +1,160 @@
-#
-# Executes commands at the start of an interactive session.
-#
-# Authors:
-#   Sorin Ionescu <sorin.ionescu@gmail.com>
-#
-
 # Source Prezto.
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
 
-# Customize to your needs...
+autoload -Uz vcs_info
+zstyle ':vcs_info:*' enable git
+zstyle ':vcs_info:*' check-for-changes true
+zstyle ':vcs_info:*' check-for-staged-changes true
+zstyle ':vcs_info:git:*' formats '%F{yellow}%b%f%c%u%m'
+zstyle ':vcs_info:git:*' actionformats '%F{red}%b|%a%f%c%u%m'
+zstyle ':vcs_info:git:*' stagedstr '%F{green}+%f'
+zstyle ':vcs_info:git:*' unstagedstr '%F{red}!%f'
+
++vi-git-untracked() {
+  # Only check if we're in a git repo and cache the result briefly
+  if [[ -n $(git ls-files --others --exclude-standard 2>/dev/null | head -1) ]]; then
+    hook_com[misc]+='%F{magenta}?%f'
+  fi
+}
+
++vi-git-sync() {
+  # Skip sync check if no upstream is set
+  if ! git rev-parse --abbrev-ref @{u} &>/dev/null; then
+    return
+  fi
+  
+  local ahead behind
+  ahead=$(git rev-list --count @{u}..HEAD 2>/dev/null)
+  behind=$(git rev-list --count HEAD..@{u} 2>/dev/null)
+
+  local sync=''
+  [[ $ahead -gt 0 ]] && sync+="%F{yellow}^$ahead%f"
+  [[ $behind -gt 0 ]] && sync+="%F{cyan}v$behind%f"
+
+  if [[ -n $sync ]]; then
+    hook_com[misc]+="$sync"
+  fi
+}
+
+zstyle ':vcs_info:git+set-message:*' hooks git-untracked git-sync
+
+# Function to shorten pwd when it's too long
+function short_pwd() {
+    local pwd_length=30  # Maximum length before shortening
+    local current_pwd="${PWD/#$HOME/~}"
+    
+    if [[ ${#current_pwd} -le $pwd_length ]]; then
+        echo "$current_pwd"
+    else
+        # Split path into components
+        local IFS='/'
+        local -a path_parts=("${(@s:/:)current_pwd}")
+        local shortened_path=""
+        
+        # Keep first part (~ or /)
+        if [[ "$current_pwd" == "~"* ]]; then
+            shortened_path="~"
+            path_parts=("${path_parts[@]:1}")  # Remove first element
+        elif [[ "$current_pwd" == "/"* ]]; then
+            shortened_path=""
+        fi
+        
+        # Process middle parts (shorten to 1 char except last)
+        local last_index=$((${#path_parts[@]} - 1))
+        for i in {0..$((last_index - 1))}; do
+            if [[ -n "${path_parts[$i]}" ]]; then
+                shortened_path+="/${path_parts[$i]:0:1}"
+            fi
+        done
+        
+        # Keep last part full
+        if [[ $last_index -ge 0 && -n "${path_parts[$last_index]}" ]]; then
+            shortened_path+="/${path_parts[$last_index]}"
+        fi
+        
+        echo "$shortened_path"
+    fi
+}
+
+setopt PROMPT_SUBST
+function precmd() {
+    local exit_code=$?
+    if [[ $exit_code -ne 0 ]]; then
+        export LAST_EXIT="%F{red}✘${exit_code}%f "
+    else
+        export LAST_EXIT=""
+    fi
+    vcs_info
+}
+PROMPT='${LAST_EXIT}[%F{white}%n@%m%f $(short_pwd)${vcs_info_msg_0_:+ ${vcs_info_msg_0_}}]$ '
+
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#999999'
+
+# Lazy load zoxide - only initialize when first used
+if command -v zoxide &> /dev/null; then
+    z() {
+        unfunction z
+        eval "$(zoxide init zsh)"
+        z "$@"
+    }
+    
+    zi() {
+        unfunction zi z
+        eval "$(zoxide init zsh)"
+        zi "$@"
+    }
+else
+    # Fallback if zoxide not installed
+    z() { echo "zoxide not installed" }
+    zi() { echo "zoxide not installed" }
+fi
+
+# Lazy load thefuck - only initialize when first used
+if command -v thefuck &> /dev/null; then
+    fuck() {
+        unfunction fuck
+        eval "$(thefuck --alias)"
+        fuck "$@"
+    }
+else
+    # Fallback if thefuck not installed
+    fuck() { echo "thefuck not installed" }
+fi
+
+export EDITOR="/opt/homebrew/bin/vim"
+export TERM="xterm-direct"
+
+# Consolidate completion setup
+fpath=(~/.zsh/completions /Users/wyt/.docker/completions $fpath)
+autoload -Uz compinit
+
+# Speed up compinit by checking only once per day
+if [[ -n ${ZDOTDIR}/.zcompdump(#qN.mh+24) ]]; then
+    compinit
+else
+    compinit -C
+fi
+
+# Lazy load ghcup environment
+[ -f "/Users/wyt/.ghcup/env" ] && . "/Users/wyt/.ghcup/env" # ghcup-env
+
+# Optimized aliases
+alias rz="exec zsh"
+alias ls="eza"
+alias ll="eza -la"
+alias la="eza -a"
+alias v='vim'
+alias e='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -s nw -nw'
+alias ec='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -s gui -c -n'
+alias gt="git status"
+alias gaa="git add ."
+alias up="cd .."
+alias emacs='/Applications/Emacs.app/Contents/MacOS/Emacs'
+
+function manp(){
+  man -t "${1}" | open -f -a Skim
+}
+
+export PATH="$HOME/go/bin:$PATH"
