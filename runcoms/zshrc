@@ -172,6 +172,11 @@ alias gt="git status"
 alias gaa="git add ."
 alias up="cd .."
 alias emacs='/Applications/Emacs.app/Contents/MacOS/Emacs'
+alias f='noglob gfind'
+
+function vl() {
+    vim -R -c 'filetype detect' - 
+}
 
 function manp(){
   man -t "${1}" | open -f -a Skim
